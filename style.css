@@ -49,6 +49,7 @@ body{
     flex-direction: column;
     justify-content: space-between;
     padding: 0px;
+    min-height: 600px;
     background-color: rgb(228, 228, 228);
     border-radius: 15px;
     padding: 30px;
@@ -59,7 +60,7 @@ body{
     display: flex;
     flex-direction: column;
     min-height: 125px;
-    width: 400px;
+    width: 500px;
     border-radius: 15px;
     border-style: solid;
     background-color: white;

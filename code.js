@@ -1,4 +1,4 @@
-let binary_operators = ["**", "+", "-", "÷", "*", "E", "/", "^", "="];
+let binary_operators = ["**", "+", "÷", "*", "E", "/", "^", "%", "=", "-"];
 let inputLine = document.querySelector(".calculator input");
 let buttonElements = document.querySelectorAll(".calculator button");
 let input = document.querySelector('.calculator .down-line');
@@ -26,6 +26,27 @@ const displayTemporaryMessage= function(string){
 
 const triggerOperateCalculator = function(event) {
   const label = document.querySelector('.calculator label');
+  let number_of_binary_operators;
+
+
+  let  last_char = inputLine.value[inputLine.value.length -1];
+  let before_last_char = inputLine.value[inputLine.value.length -2];
+  let before_before_last_char = inputLine.value[inputLine.value.length -3];
+
+  if (event.target.textContent == "+/-"){
+    number_of_binary_operators = countBinaryOperators(inputLine.value);
+
+    if (number_of_binary_operators == 0){
+      if (last_char >= '0' && last_char <= '9'){
+        inputLine.value = String(-1 * Number(inputLine.value))
+      }
+    }
+    else{
+      displayTemporaryMessage("This operator acts over a single number");    
+    }
+    
+    return;
+  }
 
 
   if (event.target.textContent != "DEL" && event.target.textContent != "AC"){
@@ -33,13 +54,8 @@ const triggerOperateCalculator = function(event) {
     label.textContent = inputLine.value;
   }
   
-  last_char = inputLine.value[inputLine.value.length -1];
-  before_last_char = inputLine.value[inputLine.value.length -2];
-  before_before_last_char = inputLine.value[inputLine.value.length -3];
-
-
   // Check input value is valid
-  if ((last_char >= '0' && last_char <= '9') || binary_operators.join("").includes(last_char)){
+  if ((last_char >= '0' && last_char <= '9') || binary_operators.join("").includes(last_char) || last_char == "."){
     ;
   }
   else{
@@ -48,15 +64,19 @@ const triggerOperateCalculator = function(event) {
   }
 
   // Check first value is valid
-  if (inputLine.value.length == 1 && (last_char < '0' || last_char > '9')){
+  if (inputLine.value.length == 1 && (last_char < '0' || last_char > '9') && last_char != "-"){
     inputLine.value = "";
     displayTemporaryMessage("Enter a number first");
   }
 
   // Check that binary operators are used correctly
   if (binary_operators.join("").includes(last_char)){
+    // if (last_char == "-" && inputLine.value.length == 1){
+    //   return;
+    // }
+
     // Special case in which before_last_char is *
-    if (before_last_char == "*"){      
+    if (before_last_char == "*"){  
       if (last_char != "*" || before_before_last_char == "*"){
         inputLine.value =  inputLine.value.substring(0, inputLine.value.length - 1);
         displayTemporaryMessage("Enter a number after binary operator");  
@@ -69,10 +89,22 @@ const triggerOperateCalculator = function(event) {
     }
   }
 
-  // Count binary operator
   let string = inputLine.value;
-  let number_of_binary_operators = countBinaryOperators(string);
+  number_of_binary_operators = countBinaryOperators(string);
+  let number_of_points = 0;
 
+  // Check that there is only one point
+  for(let i = 0; i < string.length; i++){
+    if (string[i] == "."){
+      number_of_points++;
+    }
+    if (number_of_points > 1){
+      inputLine.value =  inputLine.value.substring(0, inputLine.value.length - 1);
+      displayTemporaryMessage("Wrong decimal format");
+    }
+  }
+
+  // Count binary operator
   if (last_char == "="){
     calculateBinary();
   }
@@ -95,8 +127,12 @@ const isBinaryOperation = function(text){
 
   for(let i = 0; i < binary_operators.length; i++){  
     split_array = text.split(binary_operators[i]);
+    console.log(split_array, binary_operators[i]);
 
     if ( split_array.length == 2 && split_array[1] != "" || split_array.length > 2){
+      if (split_array[0] == ""){
+        return [String(-1*Number(split_array[1])), binary_operators[i], split_array[2]];
+      }
       return [split_array[0], binary_operators[i], split_array[1]];
     }
   }
@@ -109,7 +145,11 @@ const countBinaryOperators = function(string){
   let number_of_binary_operators = 0;
 
   for(let i = 0; i < string.length; i++){
-    if (binary_operators.join("").includes(string[i]) && string[i] != "*"){
+    if (i == 0 && string[i] == "-"){
+      ;
+    }
+    
+    else if (binary_operators.join("").includes(string[i]) && string[i] != "*"){
       number_of_binary_operators++;
     }
     else if (string[i] == "*" && string[i-1] == "*"){
@@ -127,7 +167,7 @@ const countBinaryOperators = function(string){
 const calculateBinary = function(){
 
   if ((values =  isBinaryOperation(inputLine.value))){
-  
+
     a = values[0];
     operator = values[1];
     b = values[2];
@@ -171,6 +211,8 @@ const calculateBinary = function(){
     inputLine.value = NaN;
   }
 
+
+ 
 }
 
 const operateCalculator = function(event) {
@@ -179,6 +221,7 @@ const operateCalculator = function(event) {
 
     calculateBinary();
   }
+
   else if (event.target.classList[1] == "equal-button"){
     calculateBinary();
   }
@@ -193,8 +236,8 @@ buttonElements.forEach(element => {
 
 input.addEventListener('keypress', operateCalculator);
 
-let equal_key = document.querySelector('.equal-button');
-equal_key.addEventListener('click', operateCalculator);
+// let equal_key = document.querySelector('.equal-button');
+// equal_key.addEventListener('click', operateCalculator);
 
 let ac_key = document.querySelector('.ac-button');
 ac_key.addEventListener('click', function(){inputLine.value = "";});
